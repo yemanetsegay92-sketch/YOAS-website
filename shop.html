@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YOAS | Online Market & Delivery</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <div class="logo">
+        <h1>YOAS</h1>
+        <p>Online Market & Delivery</p>
+    </div>
+
+    <a href="checkout.html" class="cart">
+        🛒 Cart (<span id="cart-count">0</span>)
+    </a>
+</header>
+
+
+<section class="shop-top">
+
+    <h2>Shop in Mekelle</h2>
+
+    <input 
+    type="text" 
+    id="search"
+    placeholder="Search products..."
+    >
+
+    <div class="categories">
+
+        <button onclick="filterProducts('all')">
+            All
+        </button>
+
+        <button onclick="filterProducts('food')">
+            Food
+        </button>
+
+        <button onclick="filterProducts('baby')">
+            Baby
+        </button>
+
+        <button onclick="filterProducts('home')">
+            Home
+        </button>
+
+    </div>
+
+</section>
+
+
+
+<section id="products" class="products">
+
+
+<div class="product-card" data-category="food">
+
+    <img src="images/potato.jpg" alt="Potato">
+
+    <h3>Potato</h3>
+
+    <p class="price">
+        50 Birr / kg
+    </p>
+
+    <button onclick="addToCart('Potato',50)">
+        Add to Cart
+    </button>
+
+</div>
+
+
+
+<div class="product-card" data-category="food">
+
+    <img src="images/tomato.jpg" alt="Tomato">
+
+    <h3>Tomato</h3>
+
+    <p class="price">
+        80 Birr / kg
+    </p>
+
+    <button onclick="addToCart('Tomato',80)">
+        Add to Cart
+    </button>
+
+</div>
+
+
+
+<div class="product-card" data-category="food">
+
+    <img src="images/oil.jpg" alt="Cooking Oil">
+
+    <h3>Cooking Oil</h3>
+
+    <p class="price">
+        350 Birr
+    </p>
+
+    <button onclick="addToCart('Cooking Oil',350)">
+        Add to Cart
+    </button>
+
+</div>
+
+
+
+<div class="product-card" data-category="baby">
+
+    <img src="images/baby.jpg" alt="Baby Milk">
+
+    <h3>Baby Milk</h3>
+
+    <p class="price">
+        250 Birr
+    </p>
+
+    <button onclick="addToCart('Baby Milk',250)">
+        Add to Cart
+    </button>
+
+</div>
+
+
+
+<div class="product-card" data-category="home">
+
+    <img src="images/soap.jpg" alt="Soap">
+
+    <h3>Soap</h3>
+
+    <p class="price">
+        40 Birr
+    </p>
+
+    <button onclick="addToCart('Soap',40)">
+        Add to Cart
+    </button>
+
+</div>
+
+
+</section>
+
+
+
+<footer>
+
+<p>
+© 2026 YOAS - Mekelle Online Market & Delivery
+</p>
+
+</footer>
+
+
+<script src="app.js"></script>
+
+</body>
+</html>

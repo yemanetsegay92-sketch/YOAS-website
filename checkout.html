@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YOAS Checkout</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+<div class="logo">
+
+<h1>YOAS</h1>
+
+<p>Checkout</p>
+
+</div>
+
+
+<a href="shop.html" class="cart">
+Continue Shopping
+</a>
+
+</header>
+
+
+
+<section class="checkout">
+
+
+<h2>Your Order 🛒</h2>
+
+
+<div id="cart-items">
+
+</div>
+
+
+<h3>
+Total:
+<span id="total-price">0</span> Birr
+</h3>
+
+
+
+<h2>Delivery Information</h2>
+
+
+<input 
+type="text"
+id="customer-name"
+placeholder="Your Name"
+>
+
+
+<input 
+type="text"
+id="phone"
+placeholder="Phone Number"
+>
+
+
+<textarea 
+id="address"
+placeholder="Delivery Address in Mekelle">
+</textarea>
+
+
+
+<button type="button" onclick="placeOrder()">
+    Place Order
+</button>
+
+
+</section>
+
+
+
+<script src="app.js"></script>
+
+
+</body>
+
+</html>
