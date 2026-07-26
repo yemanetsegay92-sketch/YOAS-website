@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YOAS Admin Login</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<section class="checkout">
+
+
+<h2>
+YOAS Admin Login
+</h2>
+
+
+<input 
+type="text"
+id="admin-user"
+placeholder="Username"
+/>
+
+
+<input 
+type="password"
+id="admin-pass"
+placeholder="Password"
+/>
+
+
+<button onclick="adminLogin()">
+Login
+</button>
+
+
+<p id="login-message"></p>
+
+
+</section>
+
+
+
+
+
+<script>
+
+
+function adminLogin(){
+
+
+let username =
+document.getElementById("admin-user").value;
+
+
+let password =
+document.getElementById("admin-pass").value;
+
+
+
+// Temporary login for testing
+
+if(username === "admin" && password === "yoas123"){
+
+
+localStorage.setItem(
+"adminLogin",
+"true"
+);
+
+
+window.location.href="admin-dashboard.html";
+
+
+}
+
+else{
+
+
+document.getElementById("login-message").innerHTML =
+"Wrong username or password";
+
+
+}
+
+
+
+}
+
+
+</script>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YOAS Admin Dashboard</title>
+
+<link rel="stylesheet" href="style.css">
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+<div class="logo">
+
+<h1>YOAS</h1>
+
+<p>Admin Dashboard</p>
+
+</div>
+
+
+<button onclick="logout()">
+Logout
+</button>
+
+
+</header>
+
+
+
+
+<section class="section">
+
+<h2>
+Welcome Admin 👋
+</h2>
+
+<p>
+Manage YOAS products and orders here.
+</p>
+
+</section>
+
+
+
+
+
+<section class="section">
+
+
+<h2>
+📊 Dashboard Overview
+</h2>
+
+
+<div class="grid">
+
+
+<div class="card">
+
+<h3 id="product-count">
+0
+</h3>
+
+<p>
+Products
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<h3>
+📦
+</h3>
+
+<p>
+Orders
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<h3>
+👥
+</h3>
+
+<p>
+Customers
+</p>
+
+</div>
+
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+<section class="section">
+
+
+<h2>
+🛒 Product Management
+</h2>
+
+
+<div id="admin-products">
+
+
+</div>
+
+
+</section>
+
+
+
+
+
+
+
+<script src="products.js"></script>
+
+
+
+<script>
+
+
+// Protect dashboard
+
+if(localStorage.getItem("adminLogin") !== "true"){
+
+window.location.href="admin-login.html";
+
+}
+
+
+
+// Logout
+
+function logout(){
+
+localStorage.removeItem("adminLogin");
+
+window.location.href="admin-login.html";
+
+}
+
+
+
+// Display products
+
+
+let productBox =
+document.getElementById("admin-products");
+
+
+let count =
+document.getElementById("product-count");
+
+
+
+let allProducts =
+JSON.parse(localStorage.getItem("yoasProducts")) || [];
+
+document.getElementById("product-count").textContent =
+allProducts.length;
+
+
+
+products.forEach(product => {
+
+
+
+productBox.innerHTML += `
+
+
+<div class="card">
+
+
+<h3>
+
+${product.name} / ${product.tigrinya}
+
+</h3>
+
+
+<p>
+
+Brand: ${product.brand}
+
+</p>
+
+
+<p>
+
+Category: ${product.category}
+
+</p>
+
+
+
+<p>
+
+Prices:
+
+</p>
+
+
+<ul>
+
+${product.options.map(option =>
+
+`<li>${option.unit} - ${option.price} Birr</li>`
+
+).join("")}
+
+</ul>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

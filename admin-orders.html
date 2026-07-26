@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YOAS Admin - Orders</title>
+
+<link rel="stylesheet" href="admin.css">
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+<div class="logo">
+
+<h1>YOAS</h1>
+
+<p>Order Management</p>
+
+</div>
+
+
+<div>
+
+<a href="admin-dashboard.html" class="btn">
+🏠 Dashboard
+</a>
+
+<a href="admin-products.html" class="btn">
+📦 Products
+</a>
+
+</div>
+
+</header>
+
+
+
+
+<section class="container">
+
+
+<h2>
+🛒 Customer Orders
+</h2>
+
+
+<div id="orders-container">
+
+</div>
+
+
+</section>
+
+
+
+
+
+<script>
+
+
+if(localStorage.getItem("adminLogin") !== "true"){
+
+window.location.href="admin-login.html";
+
+}
+
+
+
+
+function loadOrders(){
+
+
+let orders =
+JSON.parse(localStorage.getItem("yoasOrders")) || [];
+
+
+
+let container =
+document.getElementById("orders-container");
+
+
+
+container.innerHTML = "";
+
+
+
+if(orders.length === 0){
+
+
+container.innerHTML = `
+
+<div class="card">
+
+<h3>No Orders Yet</h3>
+
+<p>
+Orders from customers will appear here.
+</p>
+
+</div>
+
+`;
+
+return;
+
+
+}
+
+
+
+
+orders.reverse().forEach(order => {
+
+
+
+let items = "";
+
+
+
+order.items.forEach(item => {
+
+
+items += `
+
+<li>
+
+${item.name}
+
+(${item.unit})
+
+-
+
+${item.quantity} x ${item.price} Birr
+
+</li>
+
+`;
+
+});
+
+
+
+
+
+container.innerHTML += `
+
+
+<div class="card">
+
+
+<h3>
+
+📦 ${order.id}
+
+</h3>
+
+
+<p>
+
+<b>Customer:</b>
+${order.customer.name}
+
+</p>
+
+
+
+<p>
+
+<b>Phone:</b>
+${order.customer.phone}
+
+</p>
+
+
+
+<p>
+
+<b>Address:</b>
+${order.customer.address}
+
+</p>
+
+
+
+<h4>
+Products:
+</h4>
+
+
+<ul>
+
+${items}
+
+</ul>
+
+
+
+<p>
+
+<b>Total:</b>
+${order.total} Birr
+
+</p>
+
+
+
+<p>
+
+<b>Date:</b>
+${order.date}
+
+</p>
+
+
+
+<label>
+
+Status:
+
+</label>
+
+
+<select onchange="changeStatus('${order.id}', this.value)">
+
+
+<option ${order.status=="Pending"?"selected":""}>
+Pending
+</option>
+
+
+<option ${order.status=="Preparing"?"selected":""}>
+Preparing
+</option>
+
+
+<option ${order.status=="Out for Delivery"?"selected":""}>
+Out for Delivery
+</option>
+
+
+<option ${order.status=="Delivered"?"selected":""}>
+Delivered
+</option>
+
+
+</select>
+
+
+
+</div>
+
+
+`;
+
+
+
+});
+
+
+
+}
+
+
+
+
+function changeStatus(id,status){
+
+
+let orders =
+JSON.parse(localStorage.getItem("yoasOrders")) || [];
+
+
+
+let order =
+orders.find(o => o.id === id);
+
+
+
+if(order){
+
+
+order.status = status;
+
+
+localStorage.setItem(
+"yoasOrders",
+JSON.stringify(orders)
+);
+
+
+alert("Order status updated ✅");
+
+
+}
+
+
+
+}
+
+
+
+loadOrders();
+
+
+</script>
+
+
+</body>
+
+</html>

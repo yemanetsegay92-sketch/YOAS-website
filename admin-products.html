@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YOAS Admin - Products</title>
+
+<link rel="stylesheet" href="admin.css">
+
+<script src="products.js"></script>
+
+</head>
+
+<body>
+
+<header class="header">
+
+<div class="logo">
+<h1>YOAS</h1>
+<p>Admin Product Management</p>
+</div>
+
+<div>
+
+<a href="admin-dashboard.html" class="btn">
+🏠 Dashboard
+</a>
+
+<a href="admin-product-form.html" class="btn add-btn">
+➕ Add Product
+</a>
+
+</div>
+
+</header>
+
+
+<section class="container">
+
+<div class="top-bar">
+
+<h2>📦 Products</h2>
+
+<input
+type="text"
+id="search"
+placeholder="Search product..."
+onkeyup="searchProducts()">
+
+</div>
+
+<p class="total">
+
+Total Products:
+<span id="total-products"></span>
+
+</p>
+
+<div id="product-list" class="product-grid">
+
+</div>
+
+</section>
+
+<script>
+
+if(localStorage.getItem("adminLogin")!=="true"){
+
+window.location.href="admin-login.html";
+
+}
+
+let productList=document.getElementById("product-list");
+
+let totalProducts=document.getElementById("total-products");
+
+function loadProducts(data){
+
+productList.innerHTML="";
+
+totalProducts.textContent=data.length;
+
+data.forEach(product=>{
+
+let options="";
+
+product.options.forEach(option=>{
+
+options+=`
+<li>${option.unit} - ${option.price} Birr</li>
+`;
+
+});
+
+productList.innerHTML+=`
+
+<div class="card">
+
+<img src="${product.image}" class="product-image">
+
+<h3>${product.name}</h3>
+
+<p class="tig">${product.tigrinya}</p>
+
+<p><strong>Brand:</strong> ${product.brand}</p>
+
+<p><strong>Category:</strong> ${product.category}</p>
+
+<p><strong>Price Options</strong></p>
+
+<ul>
+
+${options}
+
+</ul>
+
+<div class="buttons">
+
+<button class="edit-btn"
+onclick="editProduct(${product.id})">
+
+✏️ Edit
+
+</button>
+
+<button class="delete-btn"
+onclick="deleteProduct(${product.id})">
+
+🗑 Delete
+
+</button>
+
+</div>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+
+let allProducts =
+JSON.parse(localStorage.getItem("yoasProducts")) || [];
+
+loadProducts(allProducts);
+
+function searchProducts(){
+
+let keyword = document
+.getElementById("search")
+.value
+.toLowerCase();
+
+let allProducts =
+JSON.parse(localStorage.getItem("yoasProducts")) || [];
+
+let filtered = allProducts.filter(product=>
+
+product.name.toLowerCase().includes(keyword)
+
+||
+
+product.tigrinya.toLowerCase().includes(keyword)
+
+||
+
+product.category.toLowerCase().includes(keyword)
+
+||
+
+product.brand.toLowerCase().includes(keyword)
+
+);
+
+loadProducts(filtered);
+
+}
+
+
+
+
+</script>
+<script src="admin.js"></script>
+</body>
+
+</html>

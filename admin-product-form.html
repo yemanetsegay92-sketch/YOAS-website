@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>YOAS Admin - Add Product</title>
+
+<link rel="stylesheet" href="admin.css">
+
+</head>
+
+
+<body>
+
+
+<header class="header">
+
+<div class="logo">
+
+<h1>YOAS</h1>
+<p>Add / Edit Product</p>
+
+</div>
+
+
+<a href="admin-products.html" class="btn">
+⬅ Back Products
+</a>
+
+
+</header>
+
+
+
+
+<section class="container">
+
+
+<h2>➕ Product Information</h2>
+
+
+<form id="product-form">
+
+
+<label>
+Product Name
+</label>
+
+<input 
+type="text"
+id="name"
+placeholder="Example: Cooking Oil"
+required>
+
+
+
+<label>
+Tigrinya Name
+</label>
+
+<input
+type="text"
+id="tigrinya"
+placeholder="ምሳሌ: ዘይቲ">
+
+
+
+<label>
+Brand
+</label>
+
+<input
+type="text"
+id="brand"
+placeholder="Brand name"
+required>
+
+
+
+<label>
+Category
+</label>
+
+<select id="category">
+
+<option>Food</option>
+<option>Baby Products</option>
+<option>Cleaning</option>
+<option>Vegetables & Fruits</option>
+<option>Other</option>
+
+</select>
+
+
+
+
+<label>
+Product Image
+</label>
+
+<input 
+type="file"
+id="image"
+accept="image/*">
+
+
+<img id="preview"
+style="width:150px;margin-top:15px;border-radius:10px;display:none;">
+
+
+
+
+
+<h3>
+Price Options
+</h3>
+
+
+<div id="options">
+
+
+<div class="option-box">
+
+<input 
+class="unit"
+placeholder="Example: 1 Liter">
+
+<input 
+class="price"
+type="number"
+placeholder="Price Birr">
+
+
+</div>
+
+
+</div>
+
+
+
+<button 
+type="button"
+class="btn"
+onclick="addOption()">
+
+➕ Add Price Option
+
+</button>
+
+
+
+<br><br>
+
+
+<button 
+class="btn add-btn"
+type="submit">
+
+💾 Save Product
+
+</button>
+
+
+
+</form>
+
+
+</section>
+
+
+
+
+
+<script src="products.js"></script>
+
+
+<script>
+
+
+// Protect page
+
+if(localStorage.getItem("adminLogin")!=="true"){
+
+window.location.href="admin-login.html";
+
+}
+
+
+
+// Image preview
+
+let imageData = "";
+let imageInput = document.getElementById("image");
+let preview = document.getElementById("preview");
+let editingId = localStorage.getItem("editingProductId");
+
+if(editingId){
+
+    let savedProducts =
+    JSON.parse(localStorage.getItem("yoasProducts")) || [];
+
+    let product = savedProducts.find(p => p.id == editingId);
+
+    if(product){
+
+        document.getElementById("name").value = product.name;
+        document.getElementById("tigrinya").value = product.tigrinya;
+        document.getElementById("brand").value = product.brand;
+        document.getElementById("category").value = product.category;
+
+        imageData = product.image;
+
+        preview.src = imageData;
+        preview.style.display = "block";
+
+        document.getElementById("options").innerHTML = "";
+
+        product.options.forEach(option => {
+
+            document.getElementById("options").innerHTML += `
+                <div class="option-box">
+                    <input class="unit" value="${option.unit}">
+                    <input class="price" type="number" value="${option.price}">
+                </div>
+            `;
+
+        });
+
+    }
+
+}
+
+
+
+imageInput.addEventListener("change", function () {
+
+    const file = this.files[0];
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+
+        imageData = e.target.result;
+
+        preview.src = imageData;
+
+        preview.style.display = "block";
+
+    };
+
+    reader.readAsDataURL(file);
+
+});
+
+
+
+
+
+// Add price option
+
+function addOption(){
+
+let box=document.createElement("div");
+
+box.className="option-box";
+
+
+box.innerHTML=`
+
+<input class="unit" placeholder="Unit">
+
+<input class="price" type="number" placeholder="Price Birr">
+
+`;
+
+
+document.getElementById("options")
+.appendChild(box);
+
+
+}
+
+
+
+
+
+// Save product
+
+document
+.getElementById("product-form")
+.addEventListener("submit",function(e){
+
+
+e.preventDefault();
+
+
+
+let options=[];
+
+
+document
+.querySelectorAll(".option-box")
+.forEach(box=>{
+
+
+let unit=
+box.querySelector(".unit").value;
+
+
+let price=
+box.querySelector(".price").value;
+
+
+
+if(unit && price){
+
+options.push({
+
+unit:unit,
+price:Number(price)
+
+});
+
+
+}
+
+
+});
+
+
+
+
+let product={
+
+
+id:Date.now(),
+
+name:
+document.getElementById("name").value,
+
+
+tigrinya:
+document.getElementById("tigrinya").value,
+
+
+brand:
+document.getElementById("brand").value,
+
+
+category:
+document.getElementById("category").value,
+
+
+image: imageData || "images/default.jpg",
+
+
+options:options
+
+
+};
+
+
+
+
+
+let savedProducts =
+JSON.parse(localStorage.getItem("yoasProducts")) || [];
+
+if(editingId){
+
+    let index = savedProducts.findIndex(
+        p => p.id == editingId
+    );
+
+    product.id = Number(editingId);
+
+    savedProducts[index] = product;
+
+    localStorage.removeItem("editingProductId");
+
+}else{
+
+    savedProducts.push(product);
+
+}
+
+localStorage.setItem(
+"yoasProducts",
+JSON.stringify(savedProducts)
+);
+
+
+
+alert(editingId ? "Product Updated Successfully ✅" : "Product Added Successfully ✅");
+
+
+
+window.location.href="admin-products.html";
+
+
+
+});
+
+
+</script>
+
+
+</body>
+
+</html>

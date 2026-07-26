@@ -1,0 +1,7 @@
+User-agent: *
+
+Disallow: /admin-login.html
+Disallow: /admin-dashboard.html
+Disallow: /admin-products.html
+Disallow: /admin-product-form.html
+Disallow: /admin-orders.html
