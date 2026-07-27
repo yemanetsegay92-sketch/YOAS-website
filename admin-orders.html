@@ -117,7 +117,7 @@ return;
 
 
 
-orders.reverse().forEach(order => {
+[...orders].reverse().forEach(order => {
 
 
 
@@ -254,6 +254,12 @@ Delivered
 </select>
 
 
+<br><br>
+
+<button onclick="deleteOrder('${order.id}')">
+🗑 Delete Order
+</button>
+
 
 </div>
 
@@ -305,7 +311,27 @@ alert("Order status updated ✅");
 
 }
 
+function deleteOrder(id){
 
+let orders =
+JSON.parse(localStorage.getItem("yoasOrders")) || [];
+
+
+orders = orders.filter(order => order.id !== id);
+
+
+localStorage.setItem(
+"yoasOrders",
+JSON.stringify(orders)
+);
+
+
+alert("Order deleted ✅");
+
+
+loadOrders();
+
+}
 
 loadOrders();
 
