@@ -365,6 +365,10 @@ fetch("/api/send-telegram", {
 .then(response => response.json())
 .then(data => {
     console.log("Telegram notification sent", data);
+
+// Clear cart after successful order
+    localStorage.removeItem("cart");
+    
     window.location.href = "success.html";
 })
 .catch(error => {
