@@ -1,26 +1,16 @@
-function editProduct(id){
+import { db } from "./firebase.js";
+import {
+    doc,
+    deleteDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-localStorage.setItem("editProductId",id);
-
-window.location.href="admin-product-form.html";
-
-}
-
-function deleteProduct(id){
+async function deleteProduct(id){
 
     if(!confirm("Are you sure you want to delete this product?")){
         return;
     }
 
-    let savedProducts =
-    JSON.parse(localStorage.getItem("yoasProducts")) || [];
-
-    savedProducts = savedProducts.filter(product => product.id !== id);
-
-    localStorage.setItem(
-        "yoasProducts",
-        JSON.stringify(savedProducts)
-    );
+    await deleteDoc(doc(db, "products", id));
 
     alert("Product deleted successfully.");
 
@@ -34,3 +24,5 @@ function editProduct(id){
     window.location.href = "admin-product-form.html";
 
 }
+window.deleteProduct = deleteProduct;
+window.editProduct = editProduct;

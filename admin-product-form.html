@@ -141,10 +141,10 @@ placeholder="Price Birr">
 
 
 
-<button 
+<button
 type="button"
 class="btn"
-onclick="addOption()">
+id="add-option-btn">
 
 ➕ Add Price Option
 
@@ -174,11 +174,13 @@ type="submit">
 
 
 
-<script src="products.js"></script>
 
 
-<script>
 
+<script type="module">
+  import { db } from "./firebase.js";
+import { collection, addDoc, doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+console.log("Firebase loaded", db);
 
 // Protect page
 
@@ -195,36 +197,42 @@ window.location.href="admin-login.html";
 let imageData = "";
 let imageInput = document.getElementById("image");
 let preview = document.getElementById("preview");
-let editingId = localStorage.getItem("editingProductId");
+
+
+let editingId = localStorage.getItem("editingProductId") || null;
+
 
 if(editingId){
 
-    let savedProducts =
-    JSON.parse(localStorage.getItem("yoasProducts")) || [];
+    let productSnap = await getDoc(
+        doc(db, "products", editingId)
+    );
 
-    let product = savedProducts.find(p => p.id == editingId);
+    if(productSnap.exists()){
 
-    if(product){
+        let product = productSnap.data();
 
-        document.getElementById("name").value = product.name;
-        document.getElementById("tigrinya").value = product.tigrinya;
-        document.getElementById("brand").value = product.brand;
-        document.getElementById("category").value = product.category;
+        document.getElementById("name").value = product.name || "";
+        document.getElementById("tigrinya").value = product.tigrinya || "";
+        document.getElementById("brand").value = product.brand || "";
+        document.getElementById("category").value = product.category || "";
 
-        imageData = product.image;
+        imageData = product.image || "";
 
-        preview.src = imageData;
-        preview.style.display = "block";
+        if(imageData){
+            preview.src = imageData;
+            preview.style.display = "block";
+        }
 
         document.getElementById("options").innerHTML = "";
 
         product.options.forEach(option => {
 
             document.getElementById("options").innerHTML += `
-                <div class="option-box">
-                    <input class="unit" value="${option.unit}">
-                    <input class="price" type="number" value="${option.price}">
-                </div>
+            <div class="option-box">
+                <input class="unit" value="${option.unit}">
+                <input class="price" type="number" value="${option.price}">
+            </div>
             `;
 
         });
@@ -232,9 +240,6 @@ if(editingId){
     }
 
 }
-
-
-
 imageInput.addEventListener("change", function () {
 
     const file = this.files[0];
@@ -265,26 +270,20 @@ imageInput.addEventListener("change", function () {
 
 function addOption(){
 
-let box=document.createElement("div");
+    let box = document.createElement("div");
 
-box.className="option-box";
+    box.className = "option-box";
 
+    box.innerHTML = `
+        <input class="unit" placeholder="Unit">
+        <input class="price" type="number" placeholder="Price Birr">
+    `;
 
-box.innerHTML=`
-
-<input class="unit" placeholder="Unit">
-
-<input class="price" type="number" placeholder="Price Birr">
-
-`;
-
-
-document.getElementById("options")
-.appendChild(box);
-
-
+    document.getElementById("options").appendChild(box);
 }
-
+document
+.getElementById("add-option-btn")
+.addEventListener("click", addOption);
 
 
 
@@ -293,8 +292,8 @@ document.getElementById("options")
 
 document
 .getElementById("product-form")
-.addEventListener("submit",function(e){
-
+.addEventListener("submit",async function(e){
+alert("Save button connected");
 
 e.preventDefault();
 
@@ -368,44 +367,43 @@ options:options
 
 
 
-let savedProducts =
-JSON.parse(localStorage.getItem("yoasProducts")) || [];
+try {
 
-if(editingId){
+    if(editingId){
 
-    let index = savedProducts.findIndex(
-        p => p.id == editingId
-    );
+        await updateDoc(
+            doc(db, "products", editingId),
+            product
+        );
 
-    product.id = Number(editingId);
+        localStorage.removeItem("editingProductId");
 
-    savedProducts[index] = product;
+    } else {
 
-    localStorage.removeItem("editingProductId");
+        await addDoc(
+            collection(db, "products"),
+            product
+        );
+        
+localStorage.removeItem("editingProductId")
+    }
 
-}else{
+    alert(editingId ? "Product Updated Successfully ✅" : "Product Added Successfully ✅");
 
-    savedProducts.push(product);
+    window.location.href = "admin-products.html";
+
+} catch(error) {
+
+    console.error(error);
+
+    alert("Firebase Error: " + error.message);
 
 }
 
-localStorage.setItem(
-"yoasProducts",
-JSON.stringify(savedProducts)
-);
-
-
-
-alert(editingId ? "Product Updated Successfully ✅" : "Product Added Successfully ✅");
-
-
-
-window.location.href="admin-products.html";
 
 
 
 });
-
 
 </script>
 

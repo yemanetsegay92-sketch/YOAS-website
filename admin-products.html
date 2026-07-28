@@ -65,7 +65,12 @@ Total Products:
 
 </section>
 
-<script>
+<script type="module">
+import { db } from "./firebase.js";
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 if(localStorage.getItem("adminLogin")!=="true"){
 
@@ -85,21 +90,25 @@ totalProducts.textContent=data.length;
 
 data.forEach(product=>{
 
-let options="";
+let options = "";
 
-product.options.forEach(option=>{
+if (product.options && Array.isArray(product.options)) {
 
-options+=`
+    product.options.forEach(option => {
+
+        options += `
 <li>${option.unit} - ${option.price} Birr</li>
 `;
 
-});
+    });
+
+}
 
 productList.innerHTML+=`
 
 <div class="card">
 
-<img src="${product.image}" class="product-image">
+<img src="${product.image || 'images/default.jpg'}" class="product-image">
 
 <h3>${product.name}</h3>
 
@@ -120,14 +129,14 @@ ${options}
 <div class="buttons">
 
 <button class="edit-btn"
-onclick="editProduct(${product.id})">
+onclick="editProduct('${product.firebaseId}')">
 
 ✏️ Edit
 
 </button>
 
 <button class="delete-btn"
-onclick="deleteProduct(${product.id})">
+onclick="deleteProduct('${product.firebaseId}')">
 
 🗑 Delete
 
@@ -145,40 +154,66 @@ onclick="deleteProduct(${product.id})">
 
 
 
-let allProducts =
-JSON.parse(localStorage.getItem("yoasProducts")) || [];
+async function loadProductsFromFirebase(){
 
-loadProducts(allProducts);
+    const snapshot = await getDocs(collection(db, "products"));
 
-function searchProducts(){
+    let allProducts = [];
 
-let keyword = document
-.getElementById("search")
-.value
-.toLowerCase();
+    snapshot.forEach((doc) => {
 
-let allProducts =
-JSON.parse(localStorage.getItem("yoasProducts")) || [];
+        allProducts.push({
+    firebaseId: doc.id,
+    ...doc.data()
+});
 
-let filtered = allProducts.filter(product=>
+    });
 
-product.name.toLowerCase().includes(keyword)
+    loadProducts(allProducts);
+console.log(allProducts);
+}
 
-||
+loadProductsFromFirebase();
 
-product.tigrinya.toLowerCase().includes(keyword)
+async function searchProducts(){
 
-||
+    let keyword = document
+    .getElementById("search")
+    .value
+    .toLowerCase();
 
-product.category.toLowerCase().includes(keyword)
+    const snapshot = await getDocs(collection(db, "products"));
 
-||
+    let allProducts = [];
 
-product.brand.toLowerCase().includes(keyword)
+    snapshot.forEach((doc) => {
 
-);
+        allProducts.push({
+    firebaseId: doc.id,
+    ...doc.data()
+});
 
-loadProducts(filtered);
+    });
+
+    let filtered = allProducts.filter(product =>
+
+        product.name.toLowerCase().includes(keyword)
+
+        ||
+
+        product.tigrinya.toLowerCase().includes(keyword)
+
+        ||
+
+        product.category.toLowerCase().includes(keyword)
+
+        ||
+
+        product.brand.toLowerCase().includes(keyword)
+
+    );
+
+    loadProducts(filtered);
 
 }
 
@@ -186,7 +221,7 @@ loadProducts(filtered);
 
 
 </script>
-<script src="admin.js"></script>
+<script type="module" src="admin.js"></script>
 </body>
 
 </html>
