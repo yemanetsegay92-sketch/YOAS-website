@@ -1,92 +1,150 @@
-function getAllProducts(){
+import { db } from "./firebase.js";
 
-    return JSON.parse(
-        localStorage.getItem("yoasProducts")
-    ) || [];
+import {
+    collection,
+    getDocs
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+
+// Load products from Firebase
+
+async function getAllProducts(){
+
+    let products = [];
+
+    const snapshot = await getDocs(
+        collection(db, "products")
+    );
+
+    snapshot.forEach(doc => {
+
+        products.push({
+
+            id: doc.id,
+
+            ...doc.data()
+
+        });
+
+    });
+
+    return products;
 
 }
 
 
 
-function displayProducts() {
+
+
+async function displayProducts() {
 
     const productContainer =
     document.getElementById("products");
 
     if (!productContainer) return;
 
+
     productContainer.innerHTML = "";
 
-    let allProducts = getAllProducts();
+
+    let allProducts = await getAllProducts();
+
+
 
     allProducts.forEach(product => {
 
+
         let optionsHTML = "";
+
 
         product.options.forEach(option => {
 
+
             optionsHTML += `
-<option value="${option.price}">
-${option.unit} - ${option.price} Birr
-</option>
-`;
+
+            <option value="${option.price}">
+
+            ${option.unit} - ${option.price} Birr
+
+            </option>
+
+            `;
+
 
         });
 
+
+
         productContainer.innerHTML += `
 
-<div class="product-card" data-category="${product.category}">
+        <div class="product-card" data-category="${product.category}">
 
-<img src="${product.image}" alt="${product.name}" class="product-image">
 
-<h3>
-${product.name} / ${product.tigrinya}
-</h3>
+        <img src="${product.image}" 
+        alt="${product.name}" 
+        class="product-image">
 
-<p>
-${product.brand}
-</p>
 
-<select id="product-${product.id}">
+        <h3>
+        ${product.name} / ${product.tigrinya || ""}
+        </h3>
 
-${optionsHTML}
 
-</select>
+        <p>
+        ${product.brand}
+        </p>
 
-<button onclick="addDynamicProduct(${product.id})">
 
-Add to Cart / ወስኽ
 
-</button>
+        <select id="product-${product.id}">
 
-</div>
+        ${optionsHTML}
 
-`;
+        </select>
+
+
+
+        <button onclick="addDynamicProduct('${product.id}')">
+
+        Add to Cart / ወስኽ
+
+        </button>
+
+
+        </div>
+
+        `;
+
 
     });
+
 
 }
 
 
 
-function addDynamicProduct(id) {
 
-    let allProducts = getAllProducts();
 
-    let product =
-    allProducts.find(p => p.id === id);
+
+
+async function addDynamicProduct(id){
+
+    let allProducts = await getAllProducts();
+
+
+let product = allProducts.find(p => String(p.id) === String(id));
+
 
     if (!product) return;
 
-    let select =
-    document.getElementById("product-" + id);
+    let select = document.getElementById("product-" + id);
 
-    let option =
-    select.options[select.selectedIndex];
+    let option = select.options[select.selectedIndex];
 
-    addToCart({
+console.log(window.addToCart);
+    window.addToCart({
 
-        name: product.name + " / " + product.tigrinya,
+        name: product.name + " / " + (product.tigrinya || ""),
 
         brand: product.brand,
 
@@ -100,5 +158,8 @@ function addDynamicProduct(id) {
 
 
 
-// Display products when page loads
+
+
 displayProducts();
+
+window.addDynamicProduct = addDynamicProduct;

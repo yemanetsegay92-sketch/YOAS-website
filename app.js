@@ -365,9 +365,9 @@ fetch("/api/send-telegram", {
 .then(response => response.json())
 .then(data => {
     console.log("Telegram notification sent", data);
-
-// Clear cart after successful order
-    localStorage.removeItem("cart");
+    
+   // Clear cart after successful order
+    localStorage.removeItem("cart"); 
     
     window.location.href = "success.html";
 })
@@ -375,7 +375,7 @@ fetch("/api/send-telegram", {
     console.error("Telegram error:", error);
     alert("Order sent, but Telegram notification failed.");
 });
-
+localStorage.removeItem("cart");
 }
 
 
@@ -484,3 +484,4 @@ if (searchBox) {
 updateCartCount();
 
 displayCart();
+window.addToCart = addToCart;
