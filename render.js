@@ -160,6 +160,6 @@ console.log(window.addToCart);
 
 
 
-displayProducts();
-
 window.addDynamicProduct = addDynamicProduct;
+
+displayProducts();
