@@ -10,7 +10,50 @@
 <title>YOAS Admin Dashboard</title>
 
 <link rel="stylesheet" href="style.css">
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+
+const firebaseConfig = {
+  apiKey: "AIzaSyANRflBP3P1sGB9gwXfzGDoiihrbQ9imxg",
+  authDomain: "yoas-e1fe2.firebaseapp.com",
+  projectId: "yoas-e1fe2",
+  storageBucket: "yoas-e1fe2.firebasestorage.app",
+  messagingSenderId: "768983650819",
+  appId: "1:768983650819:web:599e67f17e8a7f93a4f436",
+  measurementId: "G-HHL5HV0TNS"
+};
+
+
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
+
+
+onAuthStateChanged(auth, (user)=>{
+
+if(!user){
+
+window.location.href="admin-login.html";
+
+}
+
+});
+
+
+
+window.logout = function(){
+
+signOut(auth).then(()=>{
+
+window.location.href="admin-login.html";
+
+});
+
+}
+
+</script>
 </head>
 
 
@@ -28,9 +71,25 @@
 </div>
 
 
+<div>
+
+<a href="admin-products.html" class="btn">
+📦 Products
+</a>
+
+<a href="admin-product-form.html" class="btn">
+➕ Add Product
+</a>
+
+<a href="admin-orders.html" class="btn">
+🛒 Orders
+</a>
+
 <button onclick="logout()">
 Logout
 </button>
+
+</div>
 
 
 </header>
@@ -148,23 +207,10 @@ Customers
 
 // Protect dashboard
 
-if(localStorage.getItem("adminLogin") !== "true"){
-
-window.location.href="admin-login.html";
-
-}
-
 
 
 // Logout
 
-function logout(){
-
-localStorage.removeItem("adminLogin");
-
-window.location.href="admin-login.html";
-
-}
 
 
 

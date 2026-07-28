@@ -66,17 +66,27 @@ Total Products:
 </section>
 
 <script type="module">
-import { db } from "./firebase.js";
+
+import { db, auth } from "./firebase.js";
+
 import {
     collection,
     getDocs
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-if(localStorage.getItem("adminLogin")!=="true"){
+import {
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-window.location.href="admin-login.html";
+onAuthStateChanged(auth, (user)=>{
 
-}
+    if(!user){
+
+        window.location.href="admin-login.html";
+
+    }
+
+});
 
 let productList=document.getElementById("product-list");
 

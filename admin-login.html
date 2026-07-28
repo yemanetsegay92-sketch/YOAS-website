@@ -26,15 +26,15 @@ YOAS Admin Login
 
 
 <input 
-type="text"
-id="admin-user"
-placeholder="Username"
+type="email"
+id="admin-email"
+placeholder="Admin Email"
 />
 
 
 <input 
 type="password"
-id="admin-pass"
+id="admin-password"
 placeholder="Password"
 />
 
@@ -51,48 +51,61 @@ Login
 
 
 
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 
-<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyANRflBP3P1sGB9gwXfzGDoiihrbQ9imxg",
+  authDomain: "yoas-e1fe2.firebaseapp.com",
+  projectId: "yoas-e1fe2",
+  storageBucket: "yoas-e1fe2.firebasestorage.app",
+  messagingSenderId: "768983650819",
+  appId: "1:768983650819:web:599e67f17e8a7f93a4f436",
+  measurementId: "G-HHL5HV0TNS"
+};
 
 
-function adminLogin(){
+const app = initializeApp(firebaseConfig);
+
+const auth = getAuth(app);
 
 
-let username =
-document.getElementById("admin-user").value;
+
+window.adminLogin = function(){
+
+
+let email =
+document.getElementById("admin-email").value.trim();
 
 
 let password =
-document.getElementById("admin-pass").value;
+document.getElementById("admin-password").value;
 
 
 
-// Temporary login for testing
+signInWithEmailAndPassword(auth, email, password)
 
-if(username === "admin" && password === "yoas123"){
-
-
-localStorage.setItem(
-"adminLogin",
-"true"
-);
+.then((userCredential)=>{
 
 
 window.location.href="admin-dashboard.html";
 
 
-}
+})
 
-else{
+
+.catch((error)=>{
 
 
 document.getElementById("login-message").innerHTML =
-"Wrong username or password";
+"Wrong email or password";
 
 
-}
-
+});
 
 
 }
