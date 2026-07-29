@@ -65,9 +65,17 @@
 
 <script type="module">
 
-import { auth } from "./firebase.js";
+import { auth, db } from "./firebase.js";
 
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+import {
+    collection,
+    getDocs,
+    updateDoc,
+    deleteDoc,
+    doc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 onAuthStateChanged(auth, (user) => {
 
@@ -81,11 +89,20 @@ onAuthStateChanged(auth, (user) => {
 
 
 
-function loadOrders(){
+async function loadOrders(){
 
+let orders = [];
 
-let orders =
-JSON.parse(localStorage.getItem("yoasOrders")) || [];
+const snapshot = await getDocs(collection(db, "orders"));
+
+snapshot.forEach((doc) => {
+
+    orders.push({
+        firebaseId: doc.id,
+        ...doc.data()
+    });
+
+});
 
 
 
@@ -233,8 +250,7 @@ Status:
 
 </label>
 
-
-<select onchange="changeStatus('${order.id}', this.value)">
+<select onchange="changeStatus('${order.firebaseId}', this.value)">
 
 
 <option ${order.status=="Pending"?"selected":""}>
@@ -262,7 +278,7 @@ Delivered
 
 <br><br>
 
-<button onclick="deleteOrder('${order.id}')">
+<button onclick="deleteOrder('${order.firebaseId}')">
 🗑 Delete Order
 </button>
 
@@ -283,65 +299,36 @@ Delivered
 
 
 
-function changeStatus(id,status){
+async function changeStatus(id,status){
 
+const orderRef = doc(db,"orders",id);
 
-let orders =
-JSON.parse(localStorage.getItem("yoasOrders")) || [];
-
-
-
-let order =
-orders.find(o => o.id === id);
-
-
-
-if(order){
-
-
-order.status = status;
-
-
-localStorage.setItem(
-"yoasOrders",
-JSON.stringify(orders)
-);
-
+await updateDoc(orderRef,{
+    status: status
+});
 
 alert("Order status updated ✅");
 
+loadOrders();
 
 }
 
+async function deleteOrder(id){
 
-
-}
-
-function deleteOrder(id){
-
-let orders =
-JSON.parse(localStorage.getItem("yoasOrders")) || [];
-
-
-orders = orders.filter(order => order.id !== id);
-
-
-localStorage.setItem(
-"yoasOrders",
-JSON.stringify(orders)
+await deleteDoc(
+    doc(db,"orders",id)
 );
-
 
 alert("Order deleted ✅");
 
-
 loadOrders();
 
 }
 
 loadOrders();
 
-
+window.changeStatus = changeStatus;
+window.deleteOrder = deleteOrder;
 </script>
 
 

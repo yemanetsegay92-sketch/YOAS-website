@@ -161,3 +161,29 @@ body{
 }
 
 }
+.minus-btn{
+    background:#f0ad4e;   /* Orange */
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:20px;
+}
+
+.plus-btn{
+    background:#28a745;   /* Green */
+    color:white;
+    border:none;
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:20px;
+}
+
+.remove-btn{
+    background:#dc3545;   /* Red */
+    color:white;
+    border:none;
+    padding:8px 12px;
+    border-radius:8px;
+    font-weight:bold;
+}

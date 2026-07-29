@@ -1,3 +1,4 @@
+
 import { db } from "./firebase.js";
 
 import {
@@ -141,7 +142,6 @@ let product = allProducts.find(p => String(p.id) === String(id));
 
     let option = select.options[select.selectedIndex];
 
-console.log(window.addToCart);
     window.addToCart({
 
         name: product.name + " / " + (product.tigrinya || ""),

@@ -1,3 +1,11 @@
+
+import { db } from "./firebase.js";
+
+import {
+    collection,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
 // ================================
 // YOAS Smart Cart v2
 // Part 1 - Cart System
@@ -222,40 +230,43 @@ function displayCart() {
 
     cart.forEach((item, index) => {
 
+    total += item.total;
+
+    cartItems.innerHTML += `
+
+    <div class="cart-product">
 
 
-        total += item.total;
+        <h3>
+        ${item.name}
+        </h3>
 
 
-
-        cartItems.innerHTML += `
-
-        <div class="cart-product">
-
-
-            <h3>
-            ${item.name}
-            </h3>
+        <p>
+        ${item.brand || ""}
+        •
+        ${item.unit || ""}
+        </p>
 
 
-            <p>
-            ${item.brand || ""}
-            •
-            ${item.unit || ""}
-            </p>
+        <h4>
+        ${item.total} ብር
+        </h4>
 
 
-
-            <p>
-            ብዝሒ (Quantity)
-            </p>
-
+        <p>
+        ብዝሒ (Quantity)
+        </p>
 
 
-            <button onclick="decreaseQuantity(${index})">
-            ➖
+        <div class="cart-actions">
+
+
+            <button 
+            class="minus-btn"
+            onclick="decreaseQuantity(${index})">
+            −
             </button>
-
 
 
             <strong>
@@ -263,36 +274,32 @@ function displayCart() {
             </strong>
 
 
-
-            <button onclick="increaseQuantity(${index})">
-            ➕
+            <button 
+            class="plus-btn"
+            onclick="increaseQuantity(${index})">
+            +
             </button>
 
 
-
-            <p>
-            ${item.total} ብር
-            </p>
-
-
-
-            <button onclick="removeItem(${index})">
-
-            🗑 ኣውጽእ
-
+            <button 
+            class="remove-btn"
+            onclick="removeItem(${index})">
+            🗑 Remove
             </button>
-
 
 
         </div>
 
 
-        <hr>
-
-        `;
+    </div>
 
 
-    });
+   
+
+    `;
+
+
+});
 
 
 
@@ -306,7 +313,7 @@ function displayCart() {
 
 
 // Place order
-function placeOrder() {
+async function placeOrder() {
 
     const name = document.getElementById("customer-name").value.trim();
     const phone = document.getElementById("phone").value.trim();
@@ -324,24 +331,39 @@ function placeOrder() {
 
     let total = cart.reduce((sum, item) => sum + item.total, 0);
 
-    let orders = JSON.parse(localStorage.getItem("yoasOrders")) || [];
-
     let order = {
-        id: "YOAS-" + Date.now(),
-        customer: {
-            name: name,
-            phone: phone,
-            address: address
-        },
-        items: cart,
-        total: total,
-        status: "Pending",
-        date: new Date().toLocaleString()
-    };
+    id: "YOAS-" + Date.now(),
 
-    orders.push(order);
+    customer: {
+        name: name,
+        phone: phone,
+        address: address
+    },
 
-    localStorage.setItem("yoasOrders", JSON.stringify(orders));
+    items: cart,
+
+    total: total,
+
+    status: "Pending",
+
+    date: new Date().toLocaleString()
+};
+
+
+try {
+
+    await addDoc(collection(db, "orders"), order);
+
+    console.log("Order saved to Firebase");
+
+} catch(error) {
+
+    console.error("Firebase order error:", error);
+
+    alert("Order could not be saved. Please try again.");
+    return;
+
+}
 
 // Convert cart items into text
 const itemsText = cart.map(item =>
@@ -373,7 +395,13 @@ fetch("/api/send-telegram", {
 })
 .catch(error => {
     console.error("Telegram error:", error);
-    alert("Order sent, but Telegram notification failed.");
+})
+.finally(() => {
+
+    localStorage.removeItem("cart");
+
+    window.location.href = "success.html";
+
 });
 localStorage.removeItem("cart");
 }
@@ -482,6 +510,10 @@ if (searchBox) {
 // Start app
 
 updateCartCount();
-
 displayCart();
+
 window.addToCart = addToCart;
+window.placeOrder = placeOrder;
+window.increaseQuantity = increaseQuantity;
+window.decreaseQuantity = decreaseQuantity;
+window.removeItem = removeItem;
