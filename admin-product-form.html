@@ -385,17 +385,39 @@ try {
 
     } else {
 
-        await addDoc(
-            collection(db, "products"),
-            product
-        );
+        const docRef = await addDoc(
+    collection(db, "products"),
+    product
+);
         
 localStorage.removeItem("editingProductId")
     }
 
-    alert(editingId ? "Product Updated Successfully ✅" : "Product Added Successfully ✅");
+    // Send new product to Telegram channel
+if(!editingId){
 
-    window.location.href = "admin-products.html";
+    try {
+
+        const telegramResponse = await fetch(
+            `/api/post-product-to-telegram?id=${docRef.id}`
+        );
+
+        const telegramData = await telegramResponse.json();
+
+        console.log("Telegram:", telegramData);
+
+    } catch(error){
+
+        console.error("Telegram Error:", error);
+
+    }
+
+}
+
+
+alert(editingId ? "Product Updated Successfully ✅" : "Product Added Successfully ✅");
+
+window.location.href = "admin-products.html";
 
 } catch(error) {
 
