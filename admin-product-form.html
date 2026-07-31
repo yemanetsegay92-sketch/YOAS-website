@@ -298,7 +298,6 @@ document
 document
 .getElementById("product-form")
 .addEventListener("submit",async function(e){
-alert("Save button connected");
 
 e.preventDefault();
 
@@ -371,7 +370,7 @@ options:options
 
 
 
-
+let savedProductId = null;
 try {
 
     if(editingId){
@@ -383,15 +382,18 @@ try {
 
         localStorage.removeItem("editingProductId");
 
-    } else {
+} else {
 
-        const docRef = await addDoc(
-    collection(db, "products"),
-    product
-);
-        
-localStorage.removeItem("editingProductId")
-    }
+    const savedProduct = await addDoc(
+        collection(db, "products"),
+        product
+    );
+
+    savedProductId = savedProduct.id;
+
+    localStorage.removeItem("editingProductId");
+
+}
 
     // Send new product to Telegram channel
 if(!editingId){
@@ -399,8 +401,8 @@ if(!editingId){
     try {
 
         const telegramResponse = await fetch(
-            `/api/post-product-to-telegram?id=${docRef.id}`
-        );
+    `/api/post-product-to-telegram?id=${savedProductId}`
+);
 
         const telegramData = await telegramResponse.json();
 
