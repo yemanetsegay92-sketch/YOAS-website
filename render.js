@@ -37,54 +37,10 @@ async function getAllProducts() {
 
     try {
 
-        const startTime = performance.now();
+    const snapshot = await getDocs(
+        collection(db, "products")
+    );
 
-const snapshot = await getDocs(
-    collection(db, "products")
-);
-
-const endTime = performance.now();
-
-console.log(
-    "🔥 Firestore loading time:",
-    Math.round(endTime - startTime),
-    "ms"
-);
-let totalImageCharacters = 0;
-let totalDocumentCharacters = 0;
-
-snapshot.forEach(doc => {
-
-    const data = doc.data();
-
-    totalDocumentCharacters +=
-        JSON.stringify(data).length;
-
-    if (data.image) {
-
-        totalImageCharacters +=
-            data.image.length;
-
-    }
-
-});
-
-console.log(
-    "📦 Total product data:",
-    Math.round(totalDocumentCharacters / 1024),
-    "KB"
-);
-
-console.log(
-    "🖼 Image data:",
-    Math.round(totalImageCharacters / 1024),
-    "KB"
-);
-
-console.log(
-    "📦 Products:",
-    snapshot.size
-);
 
         allProducts = [];
 
