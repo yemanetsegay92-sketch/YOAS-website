@@ -413,45 +413,38 @@ function filterProducts(category) {
         document.querySelectorAll(".product-card");
 
 
-    // Convert the button names to the actual
-    // category names used by our products
-    const categoryMap = {
-
-        all: "all",
-
-        food: "food",
-
-        baby: "baby",
-
-        cleaning: "cleaning",
-
-        cake: "cake",
-
-        flour: "white flour",
-
-        cosmetics: "cosmetics",
-
-        electronics: "electronics",
-
-        building: "building"
-
-    };
-
-
-    const selectedCategory =
-        (categoryMap[category] || category)
-        .toLowerCase()
-        .trim();
-
-
     products.forEach(product => {
 
-        const productCategory =
+        let productCategory =
             (product.dataset.category || "")
             .toLowerCase()
             .trim();
 
 
+        let selectedCategory =
+            category
+            .toLowerCase()
+            .trim();
+
+
+        // Support old category names
+        if (productCategory === "baby products") {
+            productCategory = "baby";
+        }
+
+        if (productCategory === "vegetables & fruits") {
+            productCategory = "food";
+        }
+
+        if (
+            productCategory === "flour" ||
+            productCategory === "white flour"
+        ) {
+            productCategory = "wheatflour";
+        }
+
+
+        // Show or hide
         if (
             selectedCategory === "all" ||
             productCategory === selectedCategory
