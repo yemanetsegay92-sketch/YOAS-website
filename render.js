@@ -37,9 +37,19 @@ async function getAllProducts() {
 
     try {
 
-        const snapshot = await getDocs(
-            collection(db, "products")
-        );
+        const startTime = performance.now();
+
+const snapshot = await getDocs(
+    collection(db, "products")
+);
+
+const endTime = performance.now();
+
+console.log(
+    "🔥 Firestore loading time:",
+    Math.round(endTime - startTime),
+    "ms"
+);
 
 
         allProducts = [];
@@ -111,7 +121,7 @@ async function displayProducts() {
 
             Loading products...<br>
 
-            እቃታት ይጽዓኑ ኣለዉ...
+            ምህርቲ ይጽዓኑ ኣለዉ...
 
         </p>
 
@@ -133,7 +143,7 @@ async function displayProducts() {
 
                     No products found.<br>
 
-                    እቃ ኣይተረኽበን።
+                    ምህርቲ ኣይተረኽበን።
 
                 </p>
 
@@ -243,7 +253,7 @@ async function displayProducts() {
 
                     Unable to load products.<br>
 
-                    እቃታት ክጽዓኑ ኣይከኣሉን።
+                    ምህርቲ ክጽዓኑ ኣይከኣሉን።
 
                 </p>
 
