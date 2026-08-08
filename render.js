@@ -2,34 +2,67 @@ import { db } from "./firebase.js";
 
 import {
     collection,
-    getDocs
+    getDocs,
+    query,
+    limit,
+    startAfter,
+    where
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
 // ======================================
-// YOAS Product Loading
+// YOAS Progressive Product Loading
 // ======================================
+
+const PRODUCTS_PER_BATCH = 8;
 
 let allProducts = [];
 
-let productsLoaded = false;
+let lastDocument = null;
 
 let productsLoading = false;
 
+let allProductsLoaded = false;
 
-// Load products from Firebase
-async function getAllProducts() {
-
-    // Already loaded
-    if (productsLoaded) {
-        return allProducts;
-    }
+let currentCategory = "all";
 
 
-    // Prevent two requests at the same time
-    if (productsLoading) {
-        return allProducts;
-    }
+// ======================================
+// Category names
+// ======================================
+
+const categoryMap = {
+
+    all: null,
+
+    food: "Food",
+
+    baby: "Baby Products",
+
+    cleaning: "Cleaning",
+
+    cake: "Cake",
+
+    wheatflour: "Wheat Flour",
+
+    cosmetics: "Cosmetics",
+
+    electronics: "Electronics",
+
+    building: "Building"
+
+};
+
+
+// ======================================
+// Get products from Firestore
+// ======================================
+
+async function loadProductBatch(reset = false) {
+
+    if (productsLoading) return;
+
+    if (allProductsLoaded && !reset) return;
 
 
     productsLoading = true;
@@ -37,48 +70,148 @@ async function getAllProducts() {
 
     try {
 
-    const snapshot = await getDocs(
-        collection(db, "products")
-    );
+        let productsQuery;
 
 
-        allProducts = [];
+        const productsRef =
+            collection(db, "products");
+
+
+        // First batch
+        if (reset || !lastDocument) {
+
+            if (currentCategory === "all") {
+
+                productsQuery = query(
+                    productsRef,
+                    limit(PRODUCTS_PER_BATCH)
+                );
+
+            } else {
+
+                productsQuery = query(
+                    productsRef,
+                    where(
+                        "category",
+                        "==",
+                        categoryMap[currentCategory]
+                    ),
+                    limit(PRODUCTS_PER_BATCH)
+                );
+
+            }
+
+        }
+
+        // Next batch
+        else {
+
+            if (currentCategory === "all") {
+
+                productsQuery = query(
+                    productsRef,
+                    startAfter(lastDocument),
+                    limit(PRODUCTS_PER_BATCH)
+                );
+
+            } else {
+
+                productsQuery = query(
+                    productsRef,
+                    where(
+                        "category",
+                        "==",
+                        categoryMap[currentCategory]
+                    ),
+                    startAfter(lastDocument),
+                    limit(PRODUCTS_PER_BATCH)
+                );
+
+            }
+
+        }
+
+
+        const snapshot =
+            await getDocs(productsQuery);
+
+
+        // No more products
+        if (snapshot.empty) {
+
+            allProductsLoaded = true;
+
+            showEndMessage();
+
+            productsLoading = false;
+
+            return;
+
+        }
+
+
+        // Remember last Firestore document
+        lastDocument =
+            snapshot.docs[
+                snapshot.docs.length - 1
+            ];
+
+
+        let newProducts = [];
 
 
         snapshot.forEach(doc => {
 
-            allProducts.push({
+            const product = {
 
                 id: doc.id,
 
                 ...doc.data()
 
-            });
+            };
+
+
+            newProducts.push(product);
+
+            allProducts.push(product);
 
         });
 
 
-        productsLoaded = true;
+        // Display new products
+        renderProducts(newProducts);
+
+
+        // If fewer than 8 arrived,
+        // there are no more products
+        if (
+            snapshot.docs.length <
+            PRODUCTS_PER_BATCH
+        ) {
+
+            allProductsLoaded = true;
+
+            showEndMessage();
+
+        }
 
 
         console.log(
-            "YOAS products loaded:",
-            allProducts.length
+            "YOAS loaded:",
+            newProducts.length,
+            "products"
         );
-
-
-        return allProducts;
 
 
     } catch (error) {
 
         console.error(
-            "Error loading products:",
+            "YOAS product loading error:",
             error
         );
 
 
-        throw error;
+        showError();
 
 
     } finally {
@@ -92,204 +225,375 @@ async function getAllProducts() {
 
 
 // ======================================
-// Display Products
+// Render products
 // ======================================
 
-async function displayProducts() {
+function renderProducts(products) {
 
-    const productContainer =
+    const container =
         document.getElementById("products");
 
 
-    if (!productContainer) return;
+    if (!container) return;
 
 
-    // Loading message
-    productContainer.innerHTML = `
-
-        <p class="products-loading">
-
-            Loading products...<br>
-
-            ምህርቲ ይጽዓኑ ኣለዉ...
-
-        </p>
-
-    `;
+    // Remove loading message
+    const loading =
+        container.querySelector(
+            ".products-loading"
+        );
 
 
-    try {
+    if (loading) {
 
-        const products =
-            await getAllProducts();
+        loading.remove();
 
-
-        // No products in Firestore
-        if (!products.length) {
-
-            productContainer.innerHTML = `
-
-                <p class="products-loading">
-
-                    No products found.<br>
-
-                    ምህርቲ ኣይተረኽበን።
-
-                </p>
-
-            `;
-
-            return;
-
-        }
+    }
 
 
-        let productsHTML = "";
+    let html = "";
 
 
-        products.forEach(product => {
+    products.forEach(product => {
+
+        let optionsHTML = "";
 
 
-            let optionsHTML = "";
+        (product.options || []).forEach(option => {
 
+            optionsHTML += `
 
-            (product.options || []).forEach(option => {
+                <option value="${option.price}">
 
-                optionsHTML += `
+                    ${option.unit} -
+                    ${option.price} Birr
 
-                    <option value="${option.price}">
-
-                        ${option.unit} -
-                        ${option.price} Birr
-
-                    </option>
-
-                `;
-
-            });
-
-
-            productsHTML += `
-
-                <div
-                    class="product-card"
-                    data-category="${product.category || ""}"
-                >
-
-                    <img
-                        src="${product.image || ""}"
-                        alt="${product.name || "Product"}"
-                        class="product-image"
-                        loading="lazy"
-                    >
-
-
-                    <h3>
-
-                        ${product.name || ""}
-
-                        /
-
-                        ${product.tigrinya || ""}
-
-                    </h3>
-
-
-                    <p>
-
-                        ${product.brand || ""}
-
-                    </p>
-
-
-                    <select
-                        id="product-${product.id}"
-                    >
-
-                        ${optionsHTML}
-
-                    </select>
-
-
-                    <button
-                        onclick="addDynamicProduct('${product.id}')"
-                    >
-
-                        Add to Cart / ወስኽ
-
-                    </button>
-
-
-                </div>
+                </option>
 
             `;
 
         });
 
 
-        // Render once
-        productContainer.innerHTML =
-            productsHTML;
+        html += `
+
+            <div
+                class="product-card"
+                data-category="${product.category || ""}"
+            >
+
+                <img
+                    src="${product.image || ""}"
+                    alt="${product.name || "Product"}"
+                    class="product-image"
+                    loading="lazy"
+                >
 
 
-    } catch (error) {
+                <h3>
 
+                    ${product.name || ""}
 
-        productContainer.innerHTML = `
+                    /
 
-            <div class="products-loading">
+                    ${product.tigrinya || ""}
+
+                </h3>
+
 
                 <p>
 
-                    Unable to load products.<br>
-
-                    ምህርቲ ክጽዓኑ ኣይከኣሉን።
+                    ${product.brand || ""}
 
                 </p>
 
 
-                <button
-                    onclick="retryProducts()"
+                <select
+                    id="product-${product.id}"
                 >
 
-                    🔄 Retry / እንደገና ፈትን
+                    ${optionsHTML}
+
+                </select>
+
+
+                <button
+                    onclick="addDynamicProduct('${product.id}')"
+                >
+
+                    Add to Cart / ወስኽ
 
                 </button>
+
 
             </div>
 
         `;
 
-    }
+    });
+
+
+    // Add new products without removing
+    // products already displayed
+
+    container.insertAdjacentHTML(
+        "beforeend",
+        html
+    );
 
 }
 
 
 
 // ======================================
-// Retry Product Loading
+// Start / Reset products
 // ======================================
 
-async function retryProducts() {
+async function displayProducts() {
+
+    const container =
+        document.getElementById("products");
+
+
+    if (!container) return;
+
+
+    // Reset everything
 
     allProducts = [];
 
-    productsLoaded = false;
+    lastDocument = null;
+
+    allProductsLoaded = false;
 
     productsLoading = false;
 
 
-    await displayProducts();
+    container.innerHTML = `
+
+        <p class="products-loading">
+
+            Loading products...<br>
+
+            እቃታት ይጽዓኑ ኣለዉ...
+
+        </p>
+
+    `;
+
+
+    await loadProductBatch(true);
 
 }
 
 
-window.retryProducts = retryProducts;
+
+// ======================================
+// Category filter
+// ======================================
+
+async function filterProducts(category) {
+
+    category =
+        String(category)
+        .toLowerCase()
+        .trim();
+
+
+    // Reset selected category
+
+    currentCategory = category;
+
+
+    // Reset product loading
+
+    allProducts = [];
+
+    lastDocument = null;
+
+    allProductsLoaded = false;
+
+    productsLoading = false;
+
+
+    const container =
+        document.getElementById("products");
+
+
+    if (container) {
+
+        container.innerHTML = `
+
+            <p class="products-loading">
+
+                Loading ${category === "all"
+                    ? "products"
+                    : category}...
+
+                <br>
+
+                እቃታት ይጽዓኑ ኣለዉ...
+
+            </p>
+
+        `;
+
+    }
+
+
+    await loadProductBatch(true);
+
+}
+
+
+window.filterProducts =
+    filterProducts;
 
 
 
 // ======================================
-// Add Product To Cart
+// Load more when near bottom
+// ======================================
+
+window.addEventListener(
+    "scroll",
+    function() {
+
+
+        if (productsLoading) return;
+
+        if (allProductsLoaded) return;
+
+
+        const scrollPosition =
+            window.innerHeight +
+            window.scrollY;
+
+
+        const pageHeight =
+            document.documentElement
+            .scrollHeight;
+
+
+        // Start loading when
+        // customer is about 600px
+        // from the bottom
+
+        if (
+            scrollPosition >=
+            pageHeight - 600
+        ) {
+
+            loadProductBatch(false);
+
+        }
+
+    }
+);
+
+
+
+// ======================================
+// End message
+// ======================================
+
+function showEndMessage() {
+
+    const container =
+        document.getElementById("products");
+
+
+    if (!container) return;
+
+
+    const oldMessage =
+        container.querySelector(
+            ".products-end"
+        );
+
+
+    if (oldMessage) return;
+
+
+    container.insertAdjacentHTML(
+        "beforeend",
+
+        `
+
+        <p
+            class="products-end"
+            style="
+                text-align:center;
+                padding:25px;
+                width:100%;
+            "
+        >
+
+            All products loaded
+            <br>
+
+            ኩሎም እቃታት ተጻዒኖም
+
+        </p>
+
+        `
+
+    );
+
+}
+
+
+
+// ======================================
+// Error
+// ======================================
+
+function showError() {
+
+    const container =
+        document.getElementById("products");
+
+
+    if (!container) return;
+
+
+    container.innerHTML = `
+
+        <div
+            class="products-loading"
+            style="text-align:center;"
+        >
+
+            <p>
+
+                Unable to load products.
+
+                <br>
+
+                እቃታት ክጽዓኑ
+                ኣይከኣሉን።
+
+            </p>
+
+
+            <button
+                onclick="displayProducts()"
+            >
+
+                🔄 Retry / እንደገና ፈትን
+
+            </button>
+
+        </div>
+
+    `;
+
+}
+
+
+
+// ======================================
+// Add product to cart
 // ======================================
 
 function addDynamicProduct(id) {
@@ -297,7 +601,9 @@ function addDynamicProduct(id) {
 
     const product =
         allProducts.find(
-            p => String(p.id) === String(id)
+            p =>
+            String(p.id) ===
+            String(id)
         );
 
 
@@ -352,11 +658,13 @@ function addDynamicProduct(id) {
 }
 
 
-
-// Make Add to Cart available
 window.addDynamicProduct =
     addDynamicProduct;
 
 
-// Start loading
+
+// ======================================
+// Start
+// ======================================
+
 displayProducts();
