@@ -6,75 +6,149 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
 
-// Keep products in memory
-// Firestore will only be read once per shop-page visit
+// ======================================
+// YOAS Product Loading
+// ======================================
+
 let allProducts = [];
 
+let productsLoaded = false;
 
-// Load products from Firebase once
+let productsLoading = false;
+
+
+// Load products from Firebase
 async function getAllProducts() {
 
-    if (allProducts.length > 0) {
+    // Already loaded
+    if (productsLoaded) {
         return allProducts;
     }
 
-    const snapshot = await getDocs(
-        collection(db, "products")
-    );
 
-    allProducts = [];
+    // Prevent two requests at the same time
+    if (productsLoading) {
+        return allProducts;
+    }
 
-    snapshot.forEach(doc => {
 
-        allProducts.push({
+    productsLoading = true;
 
-            id: doc.id,
 
-            ...doc.data()
+    try {
+
+        const snapshot = await getDocs(
+            collection(db, "products")
+        );
+
+
+        allProducts = [];
+
+
+        snapshot.forEach(doc => {
+
+            allProducts.push({
+
+                id: doc.id,
+
+                ...doc.data()
+
+            });
 
         });
 
-    });
 
-    return allProducts;
+        productsLoaded = true;
+
+
+        console.log(
+            "YOAS products loaded:",
+            allProducts.length
+        );
+
+
+        return allProducts;
+
+
+    } catch (error) {
+
+        console.error(
+            "Error loading products:",
+            error
+        );
+
+
+        throw error;
+
+
+    } finally {
+
+        productsLoading = false;
+
+    }
+
 }
 
 
-// Display all products
+
+// ======================================
+// Display Products
+// ======================================
+
 async function displayProducts() {
 
     const productContainer =
         document.getElementById("products");
 
+
     if (!productContainer) return;
 
 
-    // Show loading message
-    productContainer.innerHTML =
-        '<p class="products-loading">Loading products... / እቃታት ይጽዓኑ ኣለዉ...</p>';
+    // Loading message
+    productContainer.innerHTML = `
+
+        <p class="products-loading">
+
+            Loading products...<br>
+
+            እቃታት ይጽዓኑ ኣለዉ...
+
+        </p>
+
+    `;
 
 
     try {
 
-        const products = await getAllProducts();
+        const products =
+            await getAllProducts();
 
 
-        if (products.length === 0) {
+        // No products in Firestore
+        if (!products.length) {
 
-            productContainer.innerHTML =
-                '<p class="products-loading">No products found. / እቃ ኣይተረኽበን።</p>';
+            productContainer.innerHTML = `
+
+                <p class="products-loading">
+
+                    No products found.<br>
+
+                    እቃ ኣይተረኽበን።
+
+                </p>
+
+            `;
 
             return;
 
         }
 
 
-        // Build the whole product list first
-        // Then put it into the page only once
         let productsHTML = "";
 
 
         products.forEach(product => {
+
 
             let optionsHTML = "";
 
@@ -85,7 +159,8 @@ async function displayProducts() {
 
                     <option value="${option.price}">
 
-                        ${option.unit} - ${option.price} Birr
+                        ${option.unit} -
+                        ${option.price} Birr
 
                     </option>
 
@@ -96,8 +171,10 @@ async function displayProducts() {
 
             productsHTML += `
 
-                <div class="product-card"
-                     data-category="${product.category || ""}">
+                <div
+                    class="product-card"
+                    data-category="${product.category || ""}"
+                >
 
                     <img
                         src="${product.image || ""}"
@@ -106,27 +183,42 @@ async function displayProducts() {
                         loading="lazy"
                     >
 
+
                     <h3>
-                        ${product.name || ""} /
+
+                        ${product.name || ""}
+
+                        /
+
                         ${product.tigrinya || ""}
+
                     </h3>
 
+
                     <p>
+
                         ${product.brand || ""}
+
                     </p>
 
-                    <select id="product-${product.id}">
+
+                    <select
+                        id="product-${product.id}"
+                    >
 
                         ${optionsHTML}
 
                     </select>
 
+
                     <button
-                        onclick="addDynamicProduct('${product.id}')">
+                        onclick="addDynamicProduct('${product.id}')"
+                    >
 
                         Add to Cart / ወስኽ
 
                     </button>
+
 
                 </div>
 
@@ -135,25 +227,36 @@ async function displayProducts() {
         });
 
 
-        // Render everything at once
-        productContainer.innerHTML = productsHTML;
+        // Render once
+        productContainer.innerHTML =
+            productsHTML;
 
 
     } catch (error) {
 
-        console.error("Error loading products:", error);
 
         productContainer.innerHTML = `
 
-            <p class="products-loading">
+            <div class="products-loading">
 
-                Unable to load products.<br>
+                <p>
 
-                እቃታት ክጽዓኑ ኣይከኣሉን።<br>
+                    Unable to load products.<br>
 
-                Please check your internet connection and try again.
+                    እቃታት ክጽዓኑ ኣይከኣሉን።
 
-            </p>
+                </p>
+
+
+                <button
+                    onclick="retryProducts()"
+                >
+
+                    🔄 Retry / እንደገና ፈትን
+
+                </button>
+
+            </div>
 
         `;
 
@@ -162,10 +265,35 @@ async function displayProducts() {
 }
 
 
-// Add product to cart
-// IMPORTANT: This no longer downloads
-// all products from Firestore again
+
+// ======================================
+// Retry Product Loading
+// ======================================
+
+async function retryProducts() {
+
+    allProducts = [];
+
+    productsLoaded = false;
+
+    productsLoading = false;
+
+
+    await displayProducts();
+
+}
+
+
+window.retryProducts = retryProducts;
+
+
+
+// ======================================
+// Add Product To Cart
+// ======================================
+
 function addDynamicProduct(id) {
+
 
     const product =
         allProducts.find(
@@ -175,7 +303,10 @@ function addDynamicProduct(id) {
 
     if (!product) {
 
-        console.error("Product not found:", id);
+        console.error(
+            "Product not found:",
+            id
+        );
 
         return;
 
@@ -183,14 +314,18 @@ function addDynamicProduct(id) {
 
 
     const select =
-        document.getElementById("product-" + id);
+        document.getElementById(
+            "product-" + id
+        );
 
 
     if (!select) return;
 
 
     const option =
-        select.options[select.selectedIndex];
+        select.options[
+            select.selectedIndex
+        ];
 
 
     if (!option) return;
@@ -217,9 +352,11 @@ function addDynamicProduct(id) {
 }
 
 
-// Make Add to Cart available to buttons
-window.addDynamicProduct = addDynamicProduct;
+
+// Make Add to Cart available
+window.addDynamicProduct =
+    addDynamicProduct;
 
 
-// Start loading products
+// Start loading
 displayProducts();
