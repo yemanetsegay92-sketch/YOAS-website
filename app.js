@@ -461,7 +461,7 @@ function filterProducts(category) {
     });
 
 }
-
+window.filterProducts = filterProducts;
 
 
 
