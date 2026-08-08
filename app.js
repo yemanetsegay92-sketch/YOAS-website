@@ -406,44 +406,66 @@ fetch("/api/send-telegram", {
 localStorage.removeItem("cart");
 }
 
-
 // Product filter
 function filterProducts(category) {
 
-
     const products =
-    document.querySelectorAll(".product-card");
+        document.querySelectorAll(".product-card");
 
+
+    // Convert the button names to the actual
+    // category names used by our products
+    const categoryMap = {
+
+        all: "all",
+
+        food: "food",
+
+        baby: "baby",
+
+        cleaning: "cleaning",
+
+        cake: "cake",
+
+        flour: "white flour",
+
+        cosmetics: "cosmetics",
+
+        electronics: "electronics",
+
+        building: "building"
+
+    };
+
+
+    const selectedCategory =
+        (categoryMap[category] || category)
+        .toLowerCase()
+        .trim();
 
 
     products.forEach(product => {
 
+        const productCategory =
+            (product.dataset.category || "")
+            .toLowerCase()
+            .trim();
 
 
         if (
-        category === "all" ||
-        product.dataset.category === category
+            selectedCategory === "all" ||
+            productCategory === selectedCategory
         ) {
 
-
-            product.style.display =
-            "block";
-
+            product.style.display = "block";
 
         } else {
 
-
-            product.style.display =
-            "none";
-
+            product.style.display = "none";
 
         }
 
-
-
     });
-
-
 
 }
 
